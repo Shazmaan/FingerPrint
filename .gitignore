@@ -1,4 +1,2 @@
 .vscode
-skel_image_255.png
-skel_image.png
-mask_of_image.png
+*.png
