@@ -44,6 +44,12 @@ class Extract_FingerPrint(object):
                     elif block_val == 4:
                         self.minutiaBif[i, j] = 1
 
+        #Calculates the set of pixels included in the smallest convex poligon that surrounds all white pixels in mask
+        self.mask = convex_hull_image(self.mask > 0)
+        #Shrinks the the bright regions and enlarges the dark ones (Example: https://bit.ly/3m0YzAZ)
+        self.mask = erosion(self.mask, square(5))  # Structuing element for mask erosion = square(5)
+        self.minutiaTerm = np.uint8(self.mask) * self.minutiaTerm
+
     def get_skeletonize(self, image):
         # get array of only > gray color
         image = np.uint8(image > 128)
