@@ -72,10 +72,40 @@ class Extract_FingerPrint(object):
         data = im.fromarray(self.mask)
         data.save("mask_of_image.png")
 
+    def get_angle(self, block, term_bif):
+        angle = []
+        (r, c) = np.shape(block)
+
+        # get center of the block
+        Cx, Cy = (r - 1)/2, (c - 1)/2
+
+        if(term_bif == "bif"):
+            sum = 0
+            for i in range(r):
+                for j in range(c):
+                    if((i == 0 or i == r - 1 or j == 0 or j == c - 1) and block[i][j] != 0):
+                        # get angle between the center and first row/column or last row/column
+                        angle.append(-1 * math.degrees(math.atan2(i - Cx, j - Cy)))
+                        sum += 1
+            if sum != 3: # assumption is termination will only have 1 != 0 value and bifurication will have atleast 3 if not make it 3
+                angle.append(float('nan'))
+        else:
+            sum = 0
+            for i in range(r):
+                for j in range(c):
+                    if((i == 0 or i == r - 1 or j == 0 or j == c - 1) and block[i][j] != 0):
+                        # get angle between the center and first row/column or last row/column
+                        angle.append(-1 * math.degrees(math.atan2(i - Cx, j - Cy)))
+                        sum += 1
+                        if sum > 1: # assumption is termination will only have 1 != 0 value
+                            # if more than one that it is most likely a bifurication
+                            angle.append(float('nan'))
+        
+        return angle
 
 def main(image_object):
     finger_extraction = Extract_FingerPrint()
     finger_extraction.get_fingerprint_data(image_object)
 
-image = cv2.imread('Images\image1.jpg', 0)
+image = cv2.imread('Images\image2.jpg', 0)
 main(image)
