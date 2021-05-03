@@ -5,6 +5,7 @@ from skimage.morphology import convex_hull_image, erosion
 from skimage.morphology import square
 from PIL import Image as im
 import math
+import sys
 
 class Extract_FingerPrint(object):
     def __init__(self):
@@ -32,19 +33,21 @@ class Extract_FingerPrint(object):
         print(self.get_angle(angle_block2, "bif"))
 
     def get_termination_bifurication(self):
+
         # change self.skel to true or false based on if it is of the white or black color
         self.skel = self.skel == 255
 
         # get number of rows and columns
         (rows, cols) = self.skel.shape
 
+        #Initalize the minutae with the shape of the skeleton
         self.minutiaTerm = np.zeros(self.skel.shape)
         self.minutiaBif = np.zeros(self.skel.shape)
 
         for i in range(1, rows - 1):
             for j in range(1, cols - 1):
+                # False represents Black and True represents White
                 if self.skel[i][j] == 1:
-                    # False represents Black and True represents White
                     block = self.skel[i - 1:i + 2, j - 1: j + 2]
 
                     # sum up number of trues
@@ -54,14 +57,25 @@ class Extract_FingerPrint(object):
                     # 4 trues => bifurication as 4 white lines are connected
                     if block_val == 2:
                         self.minutiaTerm[i, j] = 1
+
                     elif block_val == 4:
                         self.minutiaBif[i, j] = 1
 
+        #print(self.minutiaTerm)
+        #print(self.minutiaBif)
+
+        self.minutiaTerm.tofile('terminations.out', sep=",", format="%s")
+        self.minutiaBif.tofile('bifurcations.out', sep=",", format="%s")
+
+        #print(type(minutiaTerm))
+
         #Calculates the set of pixels included in the smallest convex poligon that surrounds all white pixels in mask
         self.mask = convex_hull_image(self.mask > 0)
-        #Shrinks the the bright regions and enlarges the dark ones (Example: https://bit.ly/3m0YzAZ)
-        self.mask = erosion(self.mask, square(5))  # Structuing element for mask erosion = square(5)
+        #Shrinks the the bright regions and enlarges the dark ones (Example: https://bit.ly/3m0YzAZ)        
+        self.mask = erosion(self.mask, square(5))  # eroding away the boundaries of foreground. We do this to detach the minutiae from eachother.
+        #This will get rid of the unnecessary white noise that might’ve been identified as a termination.
         self.minutiaTerm = np.uint8(self.mask) * self.minutiaTerm
+        
 
     def get_skeletonize(self, image):
         # get array of only > gray color
@@ -81,6 +95,8 @@ class Extract_FingerPrint(object):
 
         # generate mask of the image
         self.mask = image * 255
+
+        self.mask.tofile('mask.out', sep=",", format="%s")
 
         data = im.fromarray(self.mask)
         data.save("mask_of_image.png")
@@ -109,5 +125,8 @@ def main(image_object):
     finger_extraction = Extract_FingerPrint()
     finger_extraction.get_fingerprint_data(image_object)
 
-image = cv2.imread('Images\image2.jpg', 0)
+image = cv2.imread('Images\image1.jpg', 0)
 main(image)
+
+
+
