@@ -18,6 +18,19 @@ class Extract_FingerPrint(object):
 
         self.get_termination_bifurication()
 
+        angle_block = [[1, 0, 0, 0],
+                       [0, 1, 0, 0],
+                       [0, 0, 1, 0],
+                       [0, 0, 0, 1]]
+
+        angle_block2 = [[1, 1, 0, 0],
+                        [0, 1, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 1, 1]]
+
+        print(self.get_angle(angle_block, "bif"))
+        print(self.get_angle(angle_block2, "bif"))
+
     def get_termination_bifurication(self):
         # change self.skel to true or false based on if it is of the white or black color
         self.skel = self.skel == 255
@@ -79,7 +92,7 @@ class Extract_FingerPrint(object):
         # get center of the block
         Cx, Cy = (r - 1)/2, (c - 1)/2
 
-        if(term_bif == "bif"):
+        if(term_bif == "bif" or term_bif == "term"):
             sum = 0
             for i in range(r):
                 for j in range(c):
@@ -87,20 +100,9 @@ class Extract_FingerPrint(object):
                         # get angle between the center and first row/column or last row/column
                         angle.append(-1 * math.degrees(math.atan2(i - Cx, j - Cy)))
                         sum += 1
-            if sum != 3: # assumption is termination will only have 1 != 0 value and bifurication will have atleast 3 if not make it 3
-                angle.append(float('nan'))
         else:
-            sum = 0
-            for i in range(r):
-                for j in range(c):
-                    if((i == 0 or i == r - 1 or j == 0 or j == c - 1) and block[i][j] != 0):
-                        # get angle between the center and first row/column or last row/column
-                        angle.append(-1 * math.degrees(math.atan2(i - Cx, j - Cy)))
-                        sum += 1
-                        if sum > 1: # assumption is termination will only have 1 != 0 value
-                            # if more than one that it is most likely a bifurication
-                            angle.append(float('nan'))
-        
+            # right now we don't need this else loop
+            return None
         return angle
 
 def main(image_object):
